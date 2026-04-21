@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Teach for Uzbekistan — Board Financial Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root {
+  --ink: #0B1D35;
+  --ink2: #1E293B;
+  --text: #334155;
+  --muted: #64748B;
+  --line: #E2E8F0;
+  --line2: #F1F5F9;
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --ocean: #2563EB;
+  --ocean-soft: #DBEAFE;
+  --teal: #0891B2;
+  --teal-soft: #CFFAFE;
+  --gold: #F59E0B;
+  --gold-soft: #FEF3C7;
+  --orange: #EA580C;
+  --orange-soft: #FED7AA;
+  --green: #10B981;
+  --green-soft: #D1FAE5;
+  --coral: #EF4444;
+  --coral-soft: #FEE2E2;
+  --plum: #8B5CF6;
+  --plum-soft: #EDE9FE;
+  --pink: #EC4899;
+  --pink-soft: #FCE7F3;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-lg: 0 10px 30px rgba(11,29,53,0.08), 0 4px 12px rgba(11,29,53,0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 1440px; margin: 0 auto; padding: 0 28px; }
+
+/* ============ HEADER ============ */
+.header {
+  background: linear-gradient(135deg, #0B1D35 0%, #1E3A8A 100%);
+  color: white;
+  padding: 28px 0 70px;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%);
+}
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: -200px;
+  left: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+}
+.header-content { position: relative; z-index: 1; }
+
+.brand-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-mark {
+  width: 44px; height: 44px;
+  background: var(--gold);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: 0 8px 24px rgba(245,158,11,0.3);
+}
+.brand-text .name {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+.brand-text .sub {
+  font-size: 18px; font-weight: 700; color: white;
+  margin-top: 2px;
+}
+.as-of {
+  text-align: right;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+.as-of strong { color: white; font-size: 14px; display: block; margin-bottom: 2px; }
+
+h1.big-title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin: 20px 0 8px;
+}
+.header .tagline {
+  font-size: 14px;
+  color: rgba(255,255,255,0.75);
+  max-width: 700px;
+}
+
+/* ============ GLOBAL CONTROLS ============ */
+.controls-bar {
+  margin-top: 22px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.toggle {
+  display: inline-flex;
+  background: rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 3px;
+  backdrop-filter: blur(10px);
+}
+.toggle button {
+  padding: 7px 16px;
+  background: transparent;
+  color: rgba(255,255,255,0.75);
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.toggle button:hover { color: white; }
+.toggle button.active {
+  background: white;
+  color: var(--ink);
+}
+.filter-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+/* ============ TAB BAR ============ */
+.tab-bar {
+  background: white;
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 20;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+}
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.tab:hover { color: var(--ink); background: var(--bg); }
+.tab.active {
+  color: var(--ocean);
+  border-bottom-color: var(--ocean);
+}
+
+/* ============ KPI CARDS ============ */
+.kpi-wrap { margin-top: -40px; position: relative; z-index: 2; margin-bottom: 24px; }
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.kpi {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-lg);
+  border-top: 4px solid var(--ocean);
+  position: relative;
+  transition: transform 0.2s;
+}
+.kpi:hover { transform: translateY(-2px); }
+.kpi.k-cash { border-top-color: var(--ink); }
+.kpi.k-cash .kpi-value { color: var(--ink); }
+.kpi.k-rev { border-top-color: var(--green); }
+.kpi.k-rev .kpi-value { color: var(--green); }
+.kpi.k-exp { border-top-color: var(--coral); }
+.kpi.k-exp .kpi-value { color: var(--coral); }
+.kpi.k-sur { border-top-color: var(--ocean); }
+.kpi.k-sur .kpi-value { color: var(--ocean); }
+.kpi.k-eff { border-top-color: var(--gold); }
+.kpi.k-eff .kpi-value { color: var(--gold); }
+.kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.kpi-chip {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.chip-up { background: var(--green-soft); color: #065F46; }
+.chip-down { background: var(--coral-soft); color: #991B1B; }
+.chip-flat { background: var(--ocean-soft); color: #1E3A8A; }
+.chip-warn { background: var(--gold-soft); color: #92400E; }
+
+/* ============ TAB CONTENT ============ */
+.tab-content { display: none; animation: fadeIn 0.3s; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ============ SECTIONS ============ */
+.section {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+}
+.section-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.section-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.mini-toggle {
+  display: inline-flex;
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 2px;
+}
+.mini-toggle button {
+  padding: 5px 12px;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.mini-toggle button:hover { color: var(--ink); }
+.mini-toggle button.active {
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+select.ctrl {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 500;
+}
+select.ctrl:focus { outline: none; border-color: var(--ocean); }
+
+/* ============ GRIDS ============ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-auto { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  h1.big-title { font-size: 24px; }
+  .container { padding: 0 16px; }
+  .brand-row { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .as-of { text-align: left; }
+}
+
+/* ============ CHARTS ============ */
+.chart-sm { position: relative; height: 260px; }
+.chart-md { position: relative; height: 320px; }
+.chart-lg { position: relative; height: 400px; }
+
+/* ============ TABLES ============ */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 8px;
+  border-bottom: 2px solid var(--line);
+}
+table.data th.right { text-align: right; }
+table.data td {
+  padding: 11px 8px;
+  border-bottom: 1px solid var(--line2);
+  font-variant-numeric: tabular-nums;
+}
+table.data td.right { text-align: right; }
+table.data tr.highlight { background: var(--gold-soft); }
+table.data tr.highlight td { font-weight: 600; color: var(--ink); }
+table.data tr.section-row td {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ocean);
+  background: var(--ocean-soft);
+  padding: 8px 8px;
+}
+table.data tr.total-row td {
+  font-weight: 700;
+  color: var(--ink);
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background: var(--bg);
+  border-top: 2px solid var(--ink);
+}
+table.data tr.grand-row td {
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--ocean-soft);
+  border-top: 2px solid var(--ocean);
+  font-size: 14px;
+}
+table.data tr.net-row td {
+  font-weight: 800;
+  color: var(--green);
+  background: var(--green-soft);
+  border-top: 2px solid var(--green);
+  border-bottom: 2px solid var(--green);
+  font-size: 14px;
+  padding: 14px 8px;
+}
+table.data tr:hover:not(.section-row):not(.total-row):not(.net-row):not(.grand-row) { background: var(--bg); }
+table.data td.indent { padding-left: 20px; color: var(--text); }
+
+/* ============ BADGES ============ */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+.badge.international { background: var(--green-soft); color: #065F46; }
+.badge.founder { background: var(--gold-soft); color: #92400E; }
+.badge.domestic { background: var(--ocean-soft); color: #1E3A8A; }
+.badge.sponsor { background: var(--plum-soft); color: #5B21B6; }
+.badge.refund { background: var(--coral-soft); color: #991B1B; }
+.badge.other { background: var(--line2); color: var(--muted); }
+.badge.program { background: var(--ocean-soft); color: #1E3A8A; }
+.badge.admin { background: var(--gold-soft); color: #92400E; }
+
+/* ============ CALLOUTS ============ */
+.callout {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 12px;
+  border-left: 3px solid;
+}
+.callout.ok { background: var(--green-soft); border-color: var(--green); color: #065F46; }
+.callout.warn { background: var(--gold-soft); border-color: var(--gold); color: #92400E; }
+.callout.info { background: var(--ocean-soft); border-color: var(--ocean); color: #1E3A8A; }
+.callout strong { font-weight: 700; }
+
+/* ============ MISC ============ */
+.footer {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+}
+.muted { color: var(--muted); }
+.strong { font-weight: 600; color: var(--ink); }
+.money { font-variant-numeric: tabular-nums; }
+.row-head { font-weight: 600; color: var(--ink); }
+.section-pill {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--ocean-soft);
+  color: var(--ocean);
+  margin-left: 8px;
+}
+.delta-up { color: var(--green); font-weight: 600; }
+.delta-down { color: var(--coral); font-weight: 600; }
+.delta-flat { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="container header-content">
+    <div class="brand-row">
+      <div class="brand">
+        <div class="logo-mark">T</div>
+        <div class="brand-text">
+          <div class="name">Teach for Uzbekistan</div>
+          <div class="sub">Board Financial Dashboard</div>
+        </div>
+      </div>
+      <div class="as-of">
+        <strong>1 April 2026</strong>
+        Quarter-end reporting
+      </div>
+    </div>
+    <h1 class="big-title" id="hero-title">Live financial position, interactive for deeper review</h1>
+    <div class="tagline">Select a currency, year, and tab below. Every chart and table updates in real time from the same reconciled dataset.</div>
+    <div class="controls-bar">
+      <span class="filter-label">Currency</span>
+      <div class="toggle" id="ccyToggle">
+        <button class="active" data-ccy="USD">USD</button>
+        <button data-ccy="UZS">UZS</button>
+      </div>
+      <span class="filter-label" style="margin-left:12px">Years</span>
+      <div class="toggle" id="yearToggle">
+        <button class="active" data-year="all">All</button>
+        <button data-year="2024">2024</button>
+        <button data-year="2025">2025</button>
+        <button data-year="2026">2026 YTD</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="pnl">P&amp;L Statement</button>
+      <button class="tab" data-tab="bs">Balance Sheet</button>
+      <button class="tab" data-tab="cf">Cash Flow</button>
+      <button class="tab" data-tab="revenue">Revenue &amp; Donors</button>
+      <button class="tab" data-tab="expenses">Expenses</button>
+      <button class="tab" data-tab="efficiency">Program Efficiency</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- KPI CARDS -->
+<div class="kpi-wrap">
+  <div class="kpis">
+    <div class="kpi k-cash">
+      <div class="kpi-label">Total Cash</div>
+      <div class="kpi-value" id="kpi-cash">—</div>
+      <div class="kpi-sub"><span class="muted">Across 3 accounts</span></div>
+    </div>
+    <div class="kpi k-rev">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value" id="kpi-rev">—</div>
+      <div class="kpi-sub" id="kpi-rev-sub"></div>
+    </div>
+    <div class="kpi k-exp">
+      <div class="kpi-label">Total Expenses</div>
+      <div class="kpi-value" id="kpi-exp">—</div>
+      <div class="kpi-sub" id="kpi-exp-sub"></div>
+    </div>
+    <div class="kpi k-sur">
+      <div class="kpi-label">Net Surplus</div>
+      <div class="kpi-value" id="kpi-sur">—</div>
+      <div class="kpi-sub" id="kpi-sur-sub"></div>
+    </div>
+    <div class="kpi k-eff">
+      <div class="kpi-label">Program Ratio</div>
+      <div class="kpi-value" id="kpi-eff">—</div>
+      <div class="kpi-sub" id="kpi-eff-sub"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== OVERVIEW TAB ========== -->
+<div id="tab-overview" class="tab-content active">
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Revenue Composition</div>
+          <div class="section-sub">By funding source</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartOvRev"></canvas></div>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Expenses: Program vs Admin</div>
+          <div class="section-sub">Program expenses should grow faster</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartOvExp"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Cash Position Trajectory</div>
+        <div class="section-sub">Cumulative balance, all three accounts combined</div>
+      </div>
+      <div class="section-controls">
+        <div class="mini-toggle" id="cashGranularity">
+          <button class="active" data-gran="quarterly">Quarterly</button>
+          <button data-gran="monthly">Monthly</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-lg"><canvas id="chartOvCash"></canvas></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Top Donors (Lifetime)</div>
+          <div class="section-sub">Ranked by contribution</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartOvDonors"></canvas></div>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Admin Expense Share Trend</div>
+          <div class="section-sub">Target: reduce over time</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartOvAdminTrend"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== P&L TAB ========== -->
+<div id="tab-pnl" class="tab-content">
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Statement of Activities (Profit &amp; Loss)</div>
+        <div class="section-sub">All three reporting periods side by side</div>
+      </div>
+    </div>
+    <table class="data" id="pnlTable">
+      <thead>
+        <tr>
+          <th style="width:50%">Line Item</th>
+          <th class="right">2024</th>
+          <th class="right">2025</th>
+          <th class="right">Q1 2026</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Revenue vs Expenses vs Surplus</div>
+          <div class="section-sub">By year</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartPnlBar"></canvas></div>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Revenue Composition Over Time</div>
+          <div class="section-sub">Stacked by source type</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartPnlRevStack"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== BALANCE SHEET TAB ========== -->
+<div id="tab-bs" class="tab-content">
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Statement of Financial Position</div>
+        <div class="section-sub">As of 1 April 2026</div>
+      </div>
+    </div>
+    <table class="data" id="bsTable">
+      <thead>
+        <tr>
+          <th style="width:60%">Item</th>
+          <th class="right">Balance</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Cash by Account</div>
+          <div class="section-sub">Proportion of total</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartBsCashMix"></canvas></div>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Accumulated Surplus Growth</div>
+          <div class="section-sub">Year-end net assets</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartBsGrowth"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CASH FLOW TAB ========== -->
+<div id="tab-cf" class="tab-content">
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Statement of Cash Flows</div>
+        <div class="section-sub">Operating activities, by year</div>
+      </div>
+    </div>
+    <table class="data" id="cfTable">
+      <thead>
+        <tr>
+          <th style="width:50%">Line Item</th>
+          <th class="right">2024</th>
+          <th class="right">2025</th>
+          <th class="right">Q1 2026</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Net Cash Flow by Period</div>
+        <div class="section-sub">Inflows vs outflows</div>
+      </div>
+      <div class="section-controls">
+        <div class="mini-toggle" id="cfGranularity">
+          <button class="active" data-gran="quarterly">Quarterly</button>
+          <button data-gran="yearly">Yearly</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-md"><canvas id="chartCfBar"></canvas></div>
+  </div>
+</div>
+
+<!-- ========== REVENUE TAB ========== -->
+<div id="tab-revenue" class="tab-content">
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Revenue by Source Type</div>
+        <div class="section-sub">Filtered to selected years</div>
+      </div>
+      <div class="section-controls">
+        <label class="filter-label" style="color:var(--muted)">Source</label>
+        <select class="ctrl" id="revTypeFilter">
+          <option value="all">All sources</option>
+          <option value="International">International only</option>
+          <option value="Founders">Founders only</option>
+          <option value="Domestic Corporate">Domestic Corporate</option>
+          <option value="Bank Sponsors">Bank Sponsors</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-md"><canvas id="chartRevByType"></canvas></div>
+  </div>
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Donor Table</div>
+        <div class="section-sub">All contributors, year-by-year</div>
+      </div>
+      <div class="section-controls">
+        <label class="filter-label" style="color:var(--muted)">Filter by type</label>
+        <select class="ctrl" id="donorTypeFilter">
+          <option value="all">All types</option>
+          <option value="Revenue-International">International</option>
+          <option value="Revenue-Founder">Founders</option>
+          <option value="Revenue-Domestic">Domestic Corporate</option>
+          <option value="Revenue-Sponsor">Bank Sponsors</option>
+          <option value="Revenue-Refund">Tax Refunds</option>
+          <option value="Revenue-Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <table class="data" id="donorTable">
+      <thead>
+        <tr>
+          <th>Donor</th>
+          <th>Type</th>
+          <th class="right">2024</th>
+          <th class="right">2025</th>
+          <th class="right">Q1 2026</th>
+          <th class="right">Lifetime</th>
+          <th class="right">Share</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== EXPENSES TAB ========== -->
+<div id="tab-expenses" class="tab-content">
+  <!-- THIS IS THE KEY TAB FOR THE ADMIN-CUT STRATEGY -->
+  <div class="section" style="border-top: 4px solid var(--gold);">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Admin Expense Share: Trend Tracker <span class="section-pill" style="background:var(--gold-soft);color:var(--gold)">Strategic KPI</span></div>
+        <div class="section-sub">Target: admin share declining toward 35%. Program share rising to 65%+.</div>
+      </div>
+      <div class="section-controls">
+        <div class="mini-toggle" id="adminTrendGran">
+          <button class="active" data-gran="quarterly">Quarterly</button>
+          <button data-gran="monthly">Monthly</button>
+        </div>
+        <div class="mini-toggle" id="adminTrendView">
+          <button class="active" data-view="share">% Share</button>
+          <button data-view="absolute">Absolute</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-lg"><canvas id="chartAdminTrend"></canvas></div>
+    <div class="callout info" id="adminTrendNote"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Expenses by Category</div>
+          <div class="section-sub">Top cost drivers</div>
+        </div>
+        <div class="section-controls">
+          <div class="mini-toggle" id="expCatFilter">
+            <button class="active" data-type="all">All</button>
+            <button data-type="Program">Program only</button>
+            <button data-type="Admin">Admin only</button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartExpCats"></canvas></div>
+    </div>
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Monthly Expense Heatmap</div>
+          <div class="section-sub">Spend intensity by month</div>
+        </div>
+      </div>
+      <div class="chart-md"><canvas id="chartExpMonthly"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Year-over-Year Expense Change</div>
+        <div class="section-sub">Category-level absolute and % change</div>
+      </div>
+    </div>
+    <table class="data" id="expChangeTable">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Type</th>
+          <th class="right">2024</th>
+          <th class="right">2025</th>
+          <th class="right">2025 vs 2024</th>
+          <th class="right">Q1 2026</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ========== EFFICIENCY TAB ========== -->
+<div id="tab-efficiency" class="tab-content">
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Program vs Admin: Share and Absolute Change</div>
+        <div class="section-sub">Switch between monthly and quarterly granularity</div>
+      </div>
+      <div class="section-controls">
+        <div class="mini-toggle" id="effGran">
+          <button data-gran="monthly">Monthly</button>
+          <button class="active" data-gran="quarterly">Quarterly</button>
+        </div>
+        <div class="mini-toggle" id="effView">
+          <button class="active" data-view="share">% Share</button>
+          <button data-view="absolute">Absolute</button>
+          <button data-view="change">Change vs prev</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-lg"><canvas id="chartEffMain"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Efficiency Details Table</div>
+        <div class="section-sub">Quarterly breakdown with absolute and relative change</div>
+      </div>
+    </div>
+    <table class="data" id="effTable">
+      <thead>
+        <tr>
+          <th>Quarter</th>
+          <th class="right">Program</th>
+          <th class="right">Admin</th>
+          <th class="right">Total</th>
+          <th class="right">Program %</th>
+          <th class="right">Admin % vs prev</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <div class="container">
+    Teach for Uzbekistan &middot; Board Financial Report &middot; April 2026
+  </div>
+</div>
+
+<script>
+// ============ EMBEDDED DATA ============
+const DATA = {"fx": {"2024": 12698.56, "2025": 12458.07, "2026": 12920.48, "current": 12920.48}, "cash": {"account_main_uzs": 12186805124.400002, "account_card_uzs": 79442537.98000002, "account_usd": 548403.0, "total_uzs": 19351877655.82, "total_usd": 1497767.7033531263}, "revenue": {"2024": {"International": {"uzs": 0.0, "usd": 76700.0, "usd_eq": 76700.0}, "Founders": {"uzs": 316600000.0, "usd": 0.0, "usd_eq": 24931.960789254845}, "Domestic Corporate": {"uzs": 571251775.0, "usd": 0.0, "usd_eq": 44985.555448806794}, "Bank Sponsors": {"uzs": 510000000.0, "usd": 0.0, "usd_eq": 40162.034120404205}, "Tax Refunds": {"uzs": 0.0, "usd": 0.0, "usd_eq": 0.0}, "Other": {"uzs": 3701000.0, "usd": 0.0, "usd_eq": 291.4503691757176}}, "2025": {"International": {"uzs": 0.0, "usd": 487204.0, "usd_eq": 487204.0}, "Founders": {"uzs": 7437535000.0, "usd": 0.0, "usd_eq": 597005.3948966413}, "Domestic Corporate": {"uzs": 1487739565.0, "usd": 0.0, "usd_eq": 119419.74679866144}, "Bank Sponsors": {"uzs": 0.0, "usd": 0.0, "usd_eq": 0.0}, "Tax Refunds": {"uzs": 0.0, "usd": 0.0, "usd_eq": 0.0}, "Other": {"uzs": 67215501.0, "usd": 290.0, "usd_eq": 5685.338202466353}}, "2026": {"International": {"uzs": 0.0, "usd": 241057.0, "usd_eq": 241057.0}, "Founders": {"uzs": 0.0, "usd": 0.0, "usd_eq": 0.0}, "Domestic Corporate": {"uzs": 12113974250.0, "usd": 0.0, "usd_eq": 937579.2733706489}, "Bank Sponsors": {"uzs": 0.0, "usd": 0.0, "usd_eq": 0.0}, "Tax Refunds": {"uzs": 276727650.65, "usd": 0.0, "usd_eq": 21417.75310592176}, "Other": {"uzs": 434780.0, "usd": 0.0, "usd_eq": 33.65045261476354}}}, "expenses": {"2024": {"Program": {"uzs": 681216882.0, "usd": 0.0, "usd_eq": 53645.207173096795}, "Admin": {"uzs": 575961442.93, "usd": 10000.0, "usd_eq": 55356.43749606254}}, "2025": {"Program": {"uzs": 2868857957.5, "usd": 0.0, "usd_eq": 230281.09149330514}, "Admin": {"uzs": 1795862013.1, "usd": 5370.0, "usd_eq": 149522.5062148471}}, "2026": {"Program": {"uzs": 1882273359.2400002, "usd": 0.0, "usd_eq": 145681.38019949725}, "Admin": {"uzs": 1612082614.3, "usd": 1658.0, "usd_eq": 126427.56075161294}}}, "expense_subcats": {"EXP-ADM": {"name": "Administrative Fees", "type": "Admin", "by_year_usd": {"2024": 134.66093793311998, "2025": 301.0097069610301, "2026": 0.0}, "by_year_uzs": {"2024": 1710000.0, "2025": 3750000.0, "2026": 0.0}, "total_usd": 435.6706448941501}, "EXP-BNK": {"name": "Bank Charges & Interest", "type": "Admin", "by_year_usd": {"2024": 542.6894230526925, "2025": 1080.9500235590262, "2026": 877.8828433618567}, "by_year_uzs": {"2024": 6891374.199999999, "2025": 13466551.059999999, "2026": 11342667.72}, "total_usd": 2501.5222899735754}, "EXP-CARD": {"name": "Corporate Card Expenses", "type": "Admin", "by_year_usd": {"2024": 2118.788084633218, "2025": 10486.401858393796, "2026": 929.6540066622912}, "by_year_uzs": {"2024": 26905557.62, "2025": 130640328.39999999, "2026": 12011576.0}, "total_usd": 13534.843949689306}, "EXP-COM": {"name": "Communications & Internet", "type": "Admin", "by_year_usd": {"2024": 0.0, "2025": 0.0, "2026": 195.73576213886793}, "by_year_uzs": {"2024": 0.0, "2025": 0.0, "2026": 2529000.0}, "total_usd": 195.73576213886793}, "EXP-EQP": {"name": "Equipment & Supplies", "type": "Program", "by_year_usd": {"2024": 3783.893606834161, "2025": 2168.55419820245, "2026": 44515.261971691456}, "by_year_uzs": {"2024": 48050000.0, "2025": 27016000.0, "2026": 575158552.0}, "total_usd": 50467.709776728065}, "EXP-HSG-FLW": {"name": "Fellow Housing", "type": "Program", "by_year_usd": {"2024": 1104.8398401078548, "2025": 12144.738310187693, "2026": 83.89440639976225}, "by_year_uzs": {"2024": 14029875.0, "2025": 151300000.0, "2026": 1083956.0}, "total_usd": 13333.47255669531}, "EXP-OFS": {"name": "Office Supplies", "type": "Admin", "by_year_usd": {"2024": 440.6798881132979, "2025": 2804.6170875585062, "2026": 309.586021571954}, "by_year_uzs": {"2024": 5596000.0, "2025": 34940116.0, "2026": 4000000.0}, "total_usd": 3554.882997243758}, "EXP-OTH": {"name": "Other Operating", "type": "Admin", "by_year_usd": {"2024": 913.5424914320995, "2025": 1477.038468237857, "2026": 1638.9715289215262}, "by_year_uzs": {"2024": 11600674.14, "2025": 18401048.63, "2026": 21176298.86}, "total_usd": 4029.552488591483}, "EXP-PAY": {"name": "Payroll & Stipends", "type": "Program", "by_year_usd": {"2024": 48356.42836668095, "2025": 212466.27639754795, "2026": 101082.22382140602}, "by_year_uzs": {"2024": 614057007.0, "2025": 2646919744.0, "2026": 1306030851.24}, "total_usd": 361904.9285856349}, "EXP-PR": {"name": "PR & Marketing", "type": "Admin", "by_year_usd": {"2024": 2243.353577098506, "2025": 29545.676738050115, "2026": 2172.3279630478123}, "by_year_uzs": {"2024": 28487360.0, "2025": 368082109.0, "2026": 28067520.0}, "total_usd": 33961.358278196436}, "EXP-PS": {"name": "Professional Services", "type": "Admin", "by_year_usd": {"2024": 6076.650502104176, "2025": 31448.083972878623, "2026": 12787.30712016891}, "by_year_uzs": {"2024": 77164711.0, "2025": 391782431.5, "2026": 165218145.9}, "total_usd": 50312.041595151706}, "EXP-RNT-OFF": {"name": "Office Rent & Lease", "type": "Admin", "by_year_usd": {"2024": 1020.341752923166, "2025": 7706.747513860494, "2026": 15963.036822161406}, "by_year_uzs": {"2024": 12956870.969999999, "2025": 96011200.0, "2026": 206250098.0}, "total_usd": 24690.126088945068}, "EXP-SUP": {"name": "Office Supplies", "type": "Admin", "by_year_usd": {"2024": 66.2462515434821, "2025": 1658.9266234657537, "2026": 1637.6506135994948}, "by_year_uzs": {"2024": 841232.0, "2025": 20667024.0, "2026": 21159232.0}, "total_usd": 3362.8234886087307}, "EXP-TAX": {"name": "Tax Payments (Social/Income)", "type": "Admin", "by_year_usd": {"2024": 27289.151132096868, "2025": 39505.10801512593, "2026": 81672.4892434337}, "by_year_uzs": {"2024": 346532923.0, "2025": 492157401.00999993, "2026": 1055247763.82}, "total_usd": 148466.7483906565}, "EXP-TRN": {"name": "Training & Summer Institute", "type": "Program", "by_year_usd": {"2024": 400.0453594738301, "2025": 3501.5225873670643, "2026": 0.0}, "by_year_uzs": {"2024": 5080000.0, "2025": 43622213.5, "2026": 0.0}, "total_usd": 3901.5679468408944}, "EXP-TRV": {"name": "Travel & Transport", "type": "Admin", "by_year_usd": {"2024": 4510.33345513192, "2025": 18137.946206755943, "2026": 6584.918826545144}, "by_year_uzs": {"2024": 57274740.0, "2025": 225963803.5, "2026": 85080312.0}, "total_usd": 29233.19848843301}, "EXP-USD-SVC": {"name": "USD Services/Goods", "type": "Admin", "by_year_usd": {"2024": 10000.0, "2025": 5370.0, "2026": 1658.0}, "by_year_uzs": {"2024": 126985600.0, "2025": 66899835.9, "2026": 21422155.84}, "total_usd": 17028.0}}, "monthly": {"2024-01": {"program_usd": 0.0, "admin_usd": 0.0, "program_uzs": 0.0, "admin_uzs": 0.0}, "2024-02": {"program_usd": 0.0, "admin_usd": 0.0, "program_uzs": 0.0, "admin_uzs": 0.0}, "2024-03": {"program_usd": 0.0, "admin_usd": 94.71310132802459, "program_uzs": 0.0, "admin_uzs": 1202720.0}, "2024-04": {"program_usd": 0.0, "admin_usd": 824.9114033402212, "program_uzs": 0.0, "admin_uzs": 10475186.95}, "2024-05": {"program_usd": 0.0, "admin_usd": 8514.273695600132, "program_uzs": 0.0, "admin_uzs": 108119015.38}, "2024-06": {"program_usd": 5571.433611370108, "admin_usd": 6641.199798244841, "program_uzs": 70749184.0, "admin_uzs": 84333674.11}, "2024-07": {"program_usd": 0.0, "admin_usd": 2017.989241299801, "program_uzs": 0.0, "admin_uzs": 25625557.46}, "2024-08": {"program_usd": 0.0, "admin_usd": 4870.043560057204, "program_uzs": 0.0, "admin_uzs": 61842540.35}, "2024-09": {"program_usd": 12938.545079127083, "admin_usd": 737.1453574263539, "program_uzs": 164300891.0, "admin_uzs": 9360684.55}, "2024-10": {"program_usd": 13381.309770556662, "admin_usd": 16351.827395389711, "program_uzs": 169923365.0, "admin_uzs": 207644661.28999996}, "2024-11": {"program_usd": 10049.05036476577, "admin_usd": 4471.9935087128, "program_uzs": 127608469.0, "admin_uzs": 56787877.89000001}, "2024-12": {"program_usd": 11704.868347277172, "admin_usd": 10832.340434663458, "program_uzs": 148634973.0, "admin_uzs": 137555124.95}, "2025-01": {"program_usd": 11611.515989234287, "admin_usd": 2447.507121086974, "program_uzs": 144657079.0, "admin_uzs": 30491215.04}, "2025-02": {"program_usd": 11186.386494858352, "admin_usd": 7376.410476903727, "program_uzs": 139360786.0, "admin_uzs": 91895838.07000001}, "2025-03": {"program_usd": 9417.069176846815, "admin_usd": 8724.42724354575, "program_uzs": 117318507.0, "admin_uzs": 108689525.31}, "2025-04": {"program_usd": 12008.610081657913, "admin_usd": 11978.811376882613, "program_uzs": 149604105.0, "admin_uzs": 149232870.64999998}, "2025-05": {"program_usd": 12198.521038973131, "admin_usd": 11742.606373218325, "program_uzs": 151970029.0, "admin_uzs": 146290212.18}, "2025-06": {"program_usd": 3655.983149877951, "admin_usd": 9796.406191328191, "program_uzs": 45546494.0, "admin_uzs": 122044314.08}, "2025-07": {"program_usd": 11892.310165218209, "admin_usd": 41087.94730805013, "program_uzs": 148155232.5, "admin_uzs": 511876523.72}, "2025-08": {"program_usd": 14507.85073450382, "admin_usd": 16596.813845964905, "program_uzs": 180739820.0, "admin_uzs": 206764268.67}, "2025-09": {"program_usd": 37569.60604652246, "admin_usd": 9334.21811083097, "program_uzs": 468044782.0, "admin_uzs": 116286342.61999999}, "2025-10": {"program_usd": 36866.746534575585, "admin_usd": 11667.094413500647, "program_uzs": 459288509.0, "admin_uzs": 145349478.9}, "2025-11": {"program_usd": 7599.283596897433, "admin_usd": 6899.132760531928, "program_uzs": 94672407.0, "admin_uzs": 85949878.87}, "2025-12": {"program_usd": 61767.2084841392, "admin_usd": 11871.130993002927, "program_uzs": 769500207.0, "admin_uzs": 147891380.89}, "2026-01": {"program_usd": 30597.51394685027, "admin_usd": 47134.581233050165, "program_uzs": 395334567.0, "admin_uzs": 609001414.13}, "2026-02": {"program_usd": 65509.80393065893, "admin_usd": 52840.58036930518, "program_uzs": 846418111.49, "admin_uzs": 682725661.8500001}, "2026-03": {"program_usd": 49574.062321988036, "admin_usd": 23614.815715824796, "program_uzs": 640520680.75, "admin_uzs": 305114754.15999997}}, "quarterly": {"2024-Q1": {"program_usd": 0.0, "admin_usd": 94.71310132802459, "program_uzs": 0.0, "admin_uzs": 1202720.0, "revenue_usd": 15214.463293475796, "revenue_uzs": 193201775.0}, "2024-Q2": {"program_usd": 5571.433611370108, "admin_usd": 15980.384897185193, "program_uzs": 70749184.0, "admin_uzs": 202927876.44, "revenue_usd": 95820.27820477283, "revenue_uzs": 1216779552.0}, "2024-Q3": {"program_usd": 12938.545079127083, "admin_usd": 7625.178158783358, "program_uzs": 164300891.0, "admin_uzs": 96828782.36, "revenue_usd": 56715.1708540181, "revenue_uzs": 720201000.0}, "2024-Q4": {"program_usd": 35135.2284825996, "admin_usd": 31656.16133876597, "program_uzs": 446166807.0, "admin_uzs": 401987664.13, "revenue_usd": 19321.088375374846, "revenue_uzs": 245350000.0}, "2025-Q1": {"program_usd": 32214.971660939456, "admin_usd": 18548.34484153645, "program_uzs": 401336372.0, "admin_uzs": 231076578.42, "revenue_usd": 309361.5609801518, "revenue_uzs": 3854047982.0}, "2025-Q2": {"program_usd": 27863.114270508995, "admin_usd": 33517.82394142913, "program_uzs": 347120628.0, "admin_uzs": 417567396.90999997, "revenue_usd": 78635.00317464904, "revenue_uzs": 979640374.0}, "2025-Q3": {"program_usd": 63969.76694624448, "admin_usd": 67018.979264846, "program_uzs": 796939834.5, "admin_uzs": 834927135.01, "revenue_usd": 524893.6746687087, "revenue_uzs": 6539162141.58}, "2025-Q4": {"program_usd": 106233.23861561221, "admin_usd": 30437.3581670355, "program_uzs": 1323461123.0, "admin_uzs": 379190738.65999997, "revenue_usd": 296424.2410742595, "revenue_uzs": 3692873945.0}, "2026-Q1": {"program_usd": 145681.38019949725, "admin_usd": 123589.97731818013, "program_uzs": 1882273359.2400002, "admin_uzs": 1596841830.1399999, "revenue_usd": 1200087.6769291852, "revenue_uzs": 15505708828.009998}}, "cash_by_quarter": {"2024-Q1": {"uzs": 191999055.0, "usd": 15119.750192147772}, "2024-Q2": {"uzs": 826516782.5600001, "usd": 65087.441612277304}, "2024-Q3": {"uzs": 702053514.3000002, "usd": 55286.072932678995}, "2024-Q4": {"uzs": 20300314.170000076, "usd": 1598.6311967656236}, "2025-Q1": {"uzs": 2806726754.55, "usd": 225293.8661084743}, "2025-Q2": {"uzs": 2727555679.6400003, "usd": 218938.86289288793}, "2025-Q3": {"uzs": 7251476109.71, "usd": 582070.586351658}, "2025-Q4": {"uzs": 6782008458.65, "usd": 544386.767665457}, "2026-Q1": {"uzs": 19388540595.82, "usd": 1500605.286786559}}, "cash_by_month": {"2024-01": {"uzs": 0.0, "usd": 0.0}, "2024-02": {"uzs": 0.0, "usd": 0.0}, "2024-03": {"uzs": 191999055.0, "usd": 15119.750192147772}, "2024-04": {"uzs": 41288549.05000001, "usd": 3251.435521035457}, "2024-05": {"uzs": 639235085.6700001, "usd": 50339.17906203538}, "2024-06": {"uzs": 826516782.5600001, "usd": 65087.441612277304}, "2024-07": {"uzs": 504502157.01, "usd": 39729.084007163015}, "2024-08": {"uzs": 401797837.66999996, "usd": 31641.212678445427}, "2024-09": {"uzs": 702053514.3000002, "usd": 55286.072932678995}, "2024-10": {"uzs": 476422505.0100002, "usd": 37517.837062627594}, "2024-11": {"uzs": 229776695.1199999, "usd": 18094.70484212382}, "2024-12": {"uzs": 20300314.170000076, "usd": 1598.6311967656236}, "2025-01": {"uzs": 226846320.1300001, "usd": 18208.785159338495}, "2025-02": {"uzs": 3292020610.0600004, "usd": 264248.0424383553}, "2025-03": {"uzs": 2806726754.55, "usd": 225293.8661084743}, "2025-04": {"uzs": 3368470889.9000006, "usd": 270384.6494601492}, "2025-05": {"uzs": 2915146487.7200003, "usd": 233996.63733788623}, "2025-06": {"uzs": 2727555679.6400003, "usd": 218938.86289288793}, "2025-07": {"uzs": 3083762499.42, "usd": 247531.31901008746}, "2025-08": {"uzs": 2641578081.3500004, "usd": 212037.50511515833}, "2025-09": {"uzs": 7251476109.71, "usd": 582070.586351658}, "2025-10": {"uzs": 7855663434.81, "usd": 630568.2529324365}, "2025-11": {"uzs": 8506974036.940001, "usd": 682848.4698625068}, "2025-12": {"uzs": 6782008458.65, "usd": 544386.767665457}, "2026-01": {"uzs": 8666058501.57, "usd": 670722.6435527162}, "2026-02": {"uzs": 7048115222.23, "usd": 545499.4878077285}, "2026-03": {"uzs": 19388540595.82, "usd": 1500605.286786559}}, "donors": [{"name": "IMC-Capital", "type": "Revenue-Domestic", "u24": 0.0, "u25": 0.0, "u26": 12100000000.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 936497.7152551608}, {"name": "Zafar Khashimov (Founder)", "type": "Revenue-Founder", "u24": 0.0, "u25": 7437535000.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 597005.3948966413}, {"name": "Teach for All", "type": "Revenue-International", "u24": 0.0, "u25": 0.0, "u26": 0.0, "d24": 25000.0, "d25": 362924.0, "d26": 191937.0, "lifetime_usd": 579861.0}, {"name": "Stirling Foundation", "type": "Revenue-International", "u24": 0.0, "u25": 0.0, "u26": 0.0, "d24": 49700.0, "d25": 124000.0, "d26": 49120.0, "lifetime_usd": 222820.0}, {"name": "Yandex GO / Eats", "type": "Revenue-Domestic", "u24": 0.0, "u25": 901250000.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 72342.66623963423}, {"name": "Hamidjon Isomov", "type": "Revenue-Domestic", "u24": 0.0, "u25": 386546300.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 31027.78359729878}, {"name": "Umida Yuldosheva (Founder)", "type": "Revenue-Founder", "u24": 316600000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 24931.960789254845}, {"name": "Government Tax Refund", "type": "Revenue-Refund", "u24": 0.0, "u25": 0.0, "u26": 276727650.65, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 21417.75310592176}, {"name": "Unidentified donor", "type": "Revenue-Domestic", "u24": 240000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 18899.780762543156}, {"name": "Avenue Properties", "type": "Revenue-Domestic", "u24": 239951775.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 18895.983087846183}, {"name": "Alif Moliya", "type": "Revenue-Domestic", "u24": 0.0, "u25": 130000000.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 10435.003174649042}, {"name": "Other Revenue", "type": "Revenue-Other", "u24": 3701000.0, "u25": 67215501.0, "u26": 434780.0, "d24": 0.0, "d25": 290.0, "d26": 0.0, "lifetime_usd": 6010.439024256834}, {"name": "PRORUN", "type": "Revenue-Domestic", "u24": 0.0, "u25": 68908800.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5531.258052009662}, {"name": "Agrobank", "type": "Revenue-Sponsor", "u24": 70000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5512.436055741754}, {"name": "Aloqa Bank", "type": "Revenue-Sponsor", "u24": 70000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5512.436055741754}, {"name": "Business Development Bank", "type": "Revenue-Sponsor", "u24": 70000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5512.436055741754}, {"name": "Ipak Yuli Bank", "type": "Revenue-Sponsor", "u24": 70000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5512.436055741754}, {"name": "Orient Finance", "type": "Revenue-Sponsor", "u24": 70000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5512.436055741754}, {"name": "Trustbank", "type": "Revenue-Sponsor", "u24": 70000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 5512.436055741754}, {"name": "InFinBank", "type": "Revenue-Sponsor", "u24": 60000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 4724.945190635789}, {"name": "Sanruh-Servis", "type": "Revenue-Domestic", "u24": 50000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 3937.454325529824}, {"name": "Ismoilov Ilyosjon", "type": "Revenue-Domestic", "u24": 40000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 3149.963460423859}, {"name": "Asaka Bank", "type": "Revenue-Sponsor", "u24": 30000000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 2362.4725953178945}, {"name": "Other International", "type": "Revenue-International", "u24": 0.0, "u25": 0.0, "u26": 0.0, "d24": 2000.0, "d25": 280.0, "d26": 0.0, "lifetime_usd": 2280.0}, {"name": "TashGIS Technologies", "type": "Revenue-Domestic", "u24": 0.0, "u25": 0.0, "u26": 11974250.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 926.7651047019925}, {"name": "Texnoplaza Service", "type": "Revenue-Domestic", "u24": 0.0, "u25": 0.0, "u26": 2000000.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 154.793010785977}, {"name": "Madina Burieva", "type": "Revenue-Domestic", "u24": 1300000.0, "u25": 0.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 102.37381246377542}, {"name": "Clearing Account (CLICK payments)", "type": "Revenue-Domestic", "u24": 0.0, "u25": 1034465.0, "u26": 0.0, "d24": 0.0, "d25": 0.0, "d26": 0.0, "lifetime_usd": 83.03573506971786}], "pnl": {"2024": {"revenue_lines": {"International": {"uzs": 973979552.0, "usd": 76700.0}, "Founders": {"uzs": 316600000.0, "usd": 24931.960789254845}, "Domestic Corporate": {"uzs": 571251775.0, "usd": 44985.555448806794}, "Bank Sponsors": {"uzs": 510000000.0, "usd": 40162.034120404205}, "Tax Refunds": {"uzs": 0.0, "usd": 0.0}, "Other": {"uzs": 3701000.0, "usd": 291.4503691757176}}, "program_lines": {"Equipment & Supplies": {"uzs": 48050000.0, "usd": 3783.893606834161}, "Fellow Housing": {"uzs": 14029875.0, "usd": 1104.8398401078548}, "Payroll & Stipends": {"uzs": 614057007.0, "usd": 48356.42836668095}, "Training & Summer Institute": {"uzs": 5080000.0, "usd": 400.0453594738301}}, "admin_lines": {"Administrative Fees": {"uzs": 1710000.0, "usd": 134.66093793311998}, "Bank Charges & Interest": {"uzs": 6891374.199999999, "usd": 542.6894230526925}, "Corporate Card Expenses": {"uzs": 26905557.62, "usd": 2118.788084633218}, "Office Rent & Lease": {"uzs": 12956870.969999999, "usd": 1020.341752923166}, "Office Supplies": {"uzs": 6437232.0, "usd": 506.92613965678}, "Other Operating": {"uzs": 11600674.14, "usd": 913.5424914320995}, "PR & Marketing": {"uzs": 28487360.0, "usd": 2243.353577098506}, "Professional Services": {"uzs": 77164711.0, "usd": 6076.650502104176}, "Tax Payments (Social/Income)": {"uzs": 346532923.0, "usd": 27289.151132096868}, "Travel & Transport": {"uzs": 57274740.0, "usd": 4510.33345513192}, "USD Services/Goods": {"uzs": 126985600.0, "usd": 10000.0}}, "total_revenue": {"uzs": 2375532327.0, "usd": 187071.00072764157}, "total_program": {"uzs": 681216882.0, "usd": 53645.207173096795}, "total_admin": {"uzs": 702947042.93, "usd": 55356.43749606254}, "total_expenses": {"uzs": 1384163924.9299998, "usd": 109001.64466915934}, "surplus": {"uzs": 991368402.07, "usd": 78069.35605848223}}, "2025": {"revenue_lines": {"International": {"uzs": 6069621536.28, "usd": 487204.0}, "Founders": {"uzs": 7437535000.0, "usd": 597005.3948966413}, "Domestic Corporate": {"uzs": 1487739565.0, "usd": 119419.74679866144}, "Bank Sponsors": {"uzs": 0.0, "usd": 0.0}, "Tax Refunds": {"uzs": 0.0, "usd": 0.0}, "Other": {"uzs": 70828341.3, "usd": 5685.338202466353}}, "program_lines": {"Equipment & Supplies": {"uzs": 27016000.0, "usd": 2168.55419820245}, "Fellow Housing": {"uzs": 151300000.0, "usd": 12144.738310187693}, "Payroll & Stipends": {"uzs": 2646919744.0, "usd": 212466.27639754795}, "Training & Summer Institute": {"uzs": 43622213.5, "usd": 3501.5225873670643}}, "admin_lines": {"Administrative Fees": {"uzs": 3750000.0, "usd": 301.0097069610301}, "Bank Charges & Interest": {"uzs": 13466551.059999999, "usd": 1080.9500235590262}, "Corporate Card Expenses": {"uzs": 130640328.39999999, "usd": 10486.401858393796}, "Office Rent & Lease": {"uzs": 96011200.0, "usd": 7706.747513860494}, "Office Supplies": {"uzs": 55607140.0, "usd": 4463.54371102426}, "Other Operating": {"uzs": 18401048.63, "usd": 1477.038468237857}, "PR & Marketing": {"uzs": 368082109.0, "usd": 29545.676738050115}, "Professional Services": {"uzs": 391782431.5, "usd": 31448.083972878623}, "Tax Payments (Social/Income)": {"uzs": 492157401.00999993, "usd": 39505.10801512593}, "Travel & Transport": {"uzs": 225963803.5, "usd": 18137.946206755943}, "USD Services/Goods": {"uzs": 66899835.9, "usd": 5370.0}}, "total_revenue": {"uzs": 15065724442.58, "usd": 1209314.479897769}, "total_program": {"uzs": 2868857957.5, "usd": 230281.09149330517}, "total_admin": {"uzs": 1862761849.0, "usd": 149522.5062148471}, "total_expenses": {"uzs": 4731619806.5, "usd": 379803.59770815226}, "surplus": {"uzs": 10334104636.08, "usd": 829510.8821896167}}, "2026": {"revenue_lines": {"International": {"uzs": 3114572147.3599997, "usd": 241057.0}, "Founders": {"uzs": 0.0, "usd": 0.0}, "Domestic Corporate": {"uzs": 12113974250.0, "usd": 937579.2733706489}, "Bank Sponsors": {"uzs": 0.0, "usd": 0.0}, "Tax Refunds": {"uzs": 276727650.65, "usd": 21417.75310592176}, "Other": {"uzs": 434780.0, "usd": 33.65045261476354}}, "program_lines": {"Equipment & Supplies": {"uzs": 575158552.0, "usd": 44515.261971691456}, "Fellow Housing": {"uzs": 1083956.0, "usd": 83.89440639976225}, "Payroll & Stipends": {"uzs": 1306030851.24, "usd": 101082.22382140602}}, "admin_lines": {"Bank Charges & Interest": {"uzs": 11342667.72, "usd": 877.8828433618567}, "Communications & Internet": {"uzs": 2529000.0, "usd": 195.73576213886793}, "Corporate Card Expenses": {"uzs": 12011576.0, "usd": 929.6540066622912}, "Office Rent & Lease": {"uzs": 206250098.0, "usd": 15963.036822161406}, "Office Supplies": {"uzs": 25159232.0, "usd": 1947.2366351714488}, "Other Operating": {"uzs": 21176298.86, "usd": 1638.9715289215262}, "PR & Marketing": {"uzs": 28067520.0, "usd": 2172.3279630478123}, "Professional Services": {"uzs": 165218145.9, "usd": 12787.30712016891}, "Tax Payments (Social/Income)": {"uzs": 1055247763.82, "usd": 81672.4892434337}, "Travel & Transport": {"uzs": 85080312.0, "usd": 6584.918826545144}, "USD Services/Goods": {"uzs": 21422155.84, "usd": 1658.0}}, "total_revenue": {"uzs": 15505708828.01, "usd": 1200087.6769291854}, "total_program": {"uzs": 1882273359.24, "usd": 145681.38019949725}, "total_admin": {"uzs": 1633504770.14, "usd": 126427.56075161295}, "total_expenses": {"uzs": 3515778129.38, "usd": 272108.9409511102}, "surplus": {"uzs": 11989930698.630001, "usd": 927978.7359780751}}}};
+const FX = { 2024: DATA.fx['2024'], 2025: DATA.fx['2025'], 2026: DATA.fx['2026'], current: DATA.fx.current };
+
+// ============ STATE ============
+let state = {
+  ccy: 'USD',
+  years: 'all',  // 'all', '2024', '2025', '2026'
+  cashGran: 'quarterly',
+  cfGran: 'quarterly',
+  revTypeFilter: 'all',
+  donorTypeFilter: 'all',
+  expCatFilter: 'all',
+  adminTrendGran: 'quarterly',
+  adminTrendView: 'share',
+  effGran: 'quarterly',
+  effView: 'share',
+};
+
+// ============ UTILITIES ============
+function fmt(n, ccy) {
+  if (n == null || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  if (ccy === 'USD') {
+    if (abs >= 1e6) return (n<0?'-':'') + '$' + new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(Math.abs(n)/1e6) + 'M';
+    if (abs >= 1e3) return (n<0?'-':'') + '$' + new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(Math.abs(n)/1e3) + 'K';
+    return (n<0?'-':'') + '$' + new Intl.NumberFormat('en-US').format(Math.abs(Math.round(n)));
+  } else {
+    if (abs >= 1e9) return new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n/1e9) + 'B';
+    if (abs >= 1e6) return new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(n/1e6) + 'M';
+    if (abs >= 1e3) return new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n/1e3) + 'K';
+    return new Intl.NumberFormat('en-US').format(Math.round(n));
+  }
+}
+function fmtFull(n, ccy) {
+  if (n == null || isNaN(n)) return '—';
+  if (ccy === 'USD') return '$' + new Intl.NumberFormat('en-US').format(Math.round(n));
+  return new Intl.NumberFormat('en-US').format(Math.round(n)) + ' UZS';
+}
+function pct(n) {
+  if (n == null || isNaN(n)) return '—';
+  return (n*100).toFixed(1) + '%';
+}
+function signed(n, ccy) {
+  if (n == null) return '—';
+  return (n > 0 ? '+' : '') + fmt(n, ccy);
+}
+
+// Convert between currencies
+function toCurrency(uzs, year) {
+  const fx = year ? FX[year] : FX.current;
+  return state.ccy === 'USD' ? uzs / fx : uzs;
+}
+
+// ============ CHART CONFIG ============
+Chart.register(ChartDataLabels);
+Chart.defaults.font.family = '-apple-system, "Segoe UI", Roboto, sans-serif';
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#64748B';
+Chart.defaults.plugins.datalabels.display = false;
+
+const C = {
+  ink:'#0B1D35', ocean:'#2563EB', teal:'#0891B2',
+  gold:'#F59E0B', orange:'#EA580C', green:'#10B981',
+  coral:'#EF4444', plum:'#8B5CF6', pink:'#EC4899',
+  muted:'#94A3B8',
+};
+const REV_COLORS = {
+  'International': C.green,
+  'Founders': C.gold,
+  'Domestic Corporate': C.ocean,
+  'Bank Sponsors': C.plum,
+  'Tax Refunds': C.orange,
+  'Other': C.muted,
+};
+
+const charts = {};
+function killChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// ============ KPI UPDATE ============
+function updateKpis() {
+  const yrs = state.years === 'all' ? ['2024','2025','2026'] : [state.years];
+  let rev_uzs = 0, exp_uzs = 0, prog_uzs = 0, admin_uzs = 0;
+  yrs.forEach(y => {
+    rev_uzs += DATA.pnl[y].total_revenue.uzs;
+    prog_uzs += DATA.pnl[y].total_program.uzs;
+    admin_uzs += DATA.pnl[y].total_admin.uzs;
+    exp_uzs += DATA.pnl[y].total_expenses.uzs;
+  });
+  const sur_uzs = rev_uzs - exp_uzs;
+  const progShare = exp_uzs > 0 ? prog_uzs / exp_uzs : 0;
+  
+  // Cash is always "as of now" (not year-filtered)
+  document.getElementById('kpi-cash').textContent = state.ccy === 'USD' ? fmt(DATA.cash.total_usd, 'USD') : fmt(DATA.cash.total_uzs, 'UZS');
+  document.getElementById('kpi-rev').textContent = state.ccy === 'USD' ? fmt(rev_uzs / FX.current, 'USD') : fmt(rev_uzs, 'UZS');
+  document.getElementById('kpi-exp').textContent = state.ccy === 'USD' ? fmt(exp_uzs / FX.current, 'USD') : fmt(exp_uzs, 'UZS');
+  document.getElementById('kpi-sur').textContent = state.ccy === 'USD' ? fmt(sur_uzs / FX.current, 'USD') : fmt(sur_uzs, 'UZS');
+  document.getElementById('kpi-eff').textContent = pct(progShare);
+
+  // Subtitles
+  const scope = state.years === 'all' ? 'Jan 24 – Mar 26' : (state.years === '2026' ? 'Q1 2026' : state.years);
+  document.getElementById('kpi-rev-sub').innerHTML = '<span class="muted">' + scope + '</span>';
+  document.getElementById('kpi-exp-sub').innerHTML = '<span class="muted">Program + Admin</span>';
+  document.getElementById('kpi-sur-sub').innerHTML = sur_uzs > 0 
+    ? '<span class="kpi-chip chip-up">Positive</span><span class="muted">reserves built</span>'
+    : '<span class="kpi-chip chip-down">Deficit</span>';
+  document.getElementById('kpi-eff-sub').innerHTML = progShare >= 0.65 
+    ? '<span class="kpi-chip chip-up">✓ Above 65%</span>'
+    : progShare >= 0.5 
+      ? '<span class="kpi-chip chip-warn">Near target</span>'
+      : '<span class="kpi-chip chip-down">Below target</span>';
+}
+
+// ============ CHART 1: Revenue composition (Overview) ============
+function renderOvRev() {
+  const ctx = document.getElementById('chartOvRev');
+  if (!ctx) return;
+  killChart('ovRev');
+  const yrs = state.years === 'all' ? ['2024','2025','2026'] : [state.years];
+  const yrLabels = yrs.map(y => y === '2026' ? '2026 Q1' : y);
+  const types = ['International','Founders','Domestic Corporate','Bank Sponsors','Tax Refunds','Other'];
+  const datasets = types.map(t => ({
+    label: t,
+    data: yrs.map(y => {
+      const rev = DATA.revenue[y][t];
+      return state.ccy === 'USD' ? rev.usd_eq : rev.uzs + rev.usd * FX[parseInt(y)];
+    }),
+    backgroundColor: REV_COLORS[t],
+    borderRadius: 4,
+    stack: 'a',
+  }));
+  charts.ovRev = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: yrLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8, font: { size: 11 } } },
+        datalabels: {
+          display: c => c.dataset.data[c.dataIndex] > (state.ccy === 'USD' ? 30000 : 500000000),
+          color: 'white',
+          font: { weight: 'bold', size: 9 },
+          formatter: v => fmt(v, state.ccy),
+        },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + fmtFull(c.raw, state.ccy) } },
+      }
+    }
+  });
+}
+
+// ============ CHART 2: Expenses (Overview) ============
+function renderOvExp() {
+  const ctx = document.getElementById('chartOvExp');
+  if (!ctx) return;
+  killChart('ovExp');
+  const yrs = state.years === 'all' ? ['2024','2025','2026'] : [state.years];
+  const yrLabels = yrs.map(y => y === '2026' ? '2026 Q1' : y);
+  const prog = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].total_program.usd : DATA.pnl[y].total_program.uzs);
+  const admin = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].total_admin.usd : DATA.pnl[y].total_admin.uzs);
+  charts.ovExp = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: yrLabels,
+      datasets: [
+        { label: 'Program', data: prog, backgroundColor: C.ocean, borderRadius: 4, stack: 'a' },
+        { label: 'Admin', data: admin, backgroundColor: C.gold, borderRadius: 4, stack: 'a' },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: {
+          display: c => c.dataset.data[c.dataIndex] > (state.ccy === 'USD' ? 30000 : 500000000),
+          color: 'white',
+          font: { weight: 'bold', size: 10 },
+          formatter: v => fmt(v, state.ccy),
+        },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + fmtFull(c.raw, state.ccy) } },
+      }
+    }
+  });
+}
+
+// ============ CHART 3: Cash trajectory (Overview, Balance Sheet reuse) ============
+function renderOvCash() {
+  const ctx = document.getElementById('chartOvCash');
+  if (!ctx) return;
+  killChart('ovCash');
+  const periods = state.cashGran === 'quarterly' ? Object.keys(DATA.cash_by_quarter) : Object.keys(DATA.cash_by_month);
+  const dataObj = state.cashGran === 'quarterly' ? DATA.cash_by_quarter : DATA.cash_by_month;
+  const vals = periods.map(p => state.ccy === 'USD' ? dataObj[p].usd : dataObj[p].uzs);
+  const labels = state.cashGran === 'quarterly' ? periods : periods.map(p => {
+    const [y,m] = p.split('-');
+    const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return mNames[parseInt(m)-1] + ' ' + y.slice(2);
+  });
+  // Gradient fill
+  const canvas = ctx.getContext('2d');
+  const gradient = canvas.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, 'rgba(16,185,129,0.3)');
+  gradient.addColorStop(1, 'rgba(16,185,129,0)');
+  charts.ovCash = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Cash Position',
+        data: vals,
+        borderColor: C.green,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.35,
+        borderWidth: 3,
+        pointBackgroundColor: C.green,
+        pointBorderColor: 'white',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 7,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: state.cashGran === 'quarterly',
+          align: 'top', anchor: 'end',
+          color: C.ink, font: { weight: 'bold', size: 10 },
+          formatter: v => fmt(v, state.ccy),
+        },
+        tooltip: { callbacks: { label: c => 'Cash: ' + fmtFull(c.raw, state.ccy) } },
+      }
+    }
+  });
+}
+
+// ============ CHART 4: Top donors (Overview) ============
+function renderOvDonors() {
+  const ctx = document.getElementById('chartOvDonors');
+  if (!ctx) return;
+  killChart('ovDonors');
+  const top = DATA.donors.slice(0, 6);
+  const vals = top.map(d => state.ccy === 'USD' ? d.lifetime_usd : d.lifetime_usd * FX.current);
+  const colors = [C.ocean, C.gold, C.green, C.plum, C.teal, C.pink];
+  charts.ovDonors = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: top.map(d => d.name.length > 22 ? d.name.substring(0,22) + '…' : d.name),
+      datasets: [{ data: vals, backgroundColor: colors, borderRadius: 4 }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true, align: 'end', anchor: 'end',
+          color: C.ink, font: { weight: 'bold', size: 11 },
+          formatter: v => fmt(v, state.ccy),
+        },
+        tooltip: { callbacks: { label: c => fmtFull(c.raw, state.ccy) } },
+      },
+      layout: { padding: { right: 60 } },
+    }
+  });
+}
+
+// ============ CHART 5: Admin share trend (Overview + Expenses) ============
+function renderOvAdminTrend() {
+  const ctx = document.getElementById('chartOvAdminTrend');
+  if (!ctx) return;
+  killChart('ovAdminTrend');
+  const quarters = Object.keys(DATA.quarterly);
+  const adminShare = quarters.map(q => {
+    const d = DATA.quarterly[q];
+    const t = d.program_usd + d.admin_usd;
+    return t > 0 ? (d.admin_usd / t) * 100 : 0;
+  });
+  charts.ovAdminTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: quarters,
+      datasets: [
+        {
+          label: 'Admin share %',
+          data: adminShare,
+          borderColor: C.gold,
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 3,
+          pointBackgroundColor: C.gold,
+          pointRadius: 4,
+        },
+        {
+          label: 'Target (35%)',
+          data: quarters.map(() => 35),
+          borderColor: C.coral,
+          borderDash: [6, 4],
+          fill: false,
+          pointRadius: 0,
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, min: 0, max: 100, ticks: { callback: v => v + '%' } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: {
+          display: c => c.datasetIndex === 0,
+          align: 'top', anchor: 'end',
+          color: C.ink, font: { weight: 'bold', size: 10 },
+          formatter: v => v.toFixed(0) + '%',
+        },
+      },
+    },
+  });
+}
+
+// ============ P&L TABLE ============
+function renderPnlTable() {
+  const tbody = document.querySelector('#pnlTable tbody');
+  if (!tbody) return;
+  const yrs = ['2024','2025','2026'];
+  const fmtCell = (v) => state.ccy === 'USD' ? fmt(v.usd, 'USD') : fmt(v.uzs, 'UZS');
+  
+  let html = '';
+  html += '<tr class="section-row"><td colspan="4">Revenue &amp; Support</td></tr>';
+  // Union of all revenue lines
+  const revLines = new Set();
+  yrs.forEach(y => Object.keys(DATA.pnl[y].revenue_lines).forEach(k => revLines.add(k)));
+  [...revLines].forEach(line => {
+    html += '<tr><td class="indent">' + line + '</td>';
+    yrs.forEach(y => {
+      const v = DATA.pnl[y].revenue_lines[line];
+      html += '<td class="right money">' + (v ? fmtCell(v) : '—') + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '<tr class="total-row"><td>Total Revenue</td>';
+  yrs.forEach(y => { html += '<td class="right money">' + fmtCell(DATA.pnl[y].total_revenue) + '</td>'; });
+  html += '</tr>';
+  
+  html += '<tr class="section-row"><td colspan="4">Program Expenses</td></tr>';
+  const progLines = new Set();
+  yrs.forEach(y => Object.keys(DATA.pnl[y].program_lines).forEach(k => progLines.add(k)));
+  [...progLines].forEach(line => {
+    html += '<tr><td class="indent">' + line + '</td>';
+    yrs.forEach(y => {
+      const v = DATA.pnl[y].program_lines[line];
+      html += '<td class="right money">' + (v ? fmtCell(v) : '—') + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '<tr class="total-row"><td>Total Program Expenses</td>';
+  yrs.forEach(y => { html += '<td class="right money">' + fmtCell(DATA.pnl[y].total_program) + '</td>'; });
+  html += '</tr>';
+  
+  html += '<tr class="section-row"><td colspan="4">Administrative Expenses</td></tr>';
+  const admLines = new Set();
+  yrs.forEach(y => Object.keys(DATA.pnl[y].admin_lines).forEach(k => admLines.add(k)));
+  [...admLines].forEach(line => {
+    html += '<tr><td class="indent">' + line + '</td>';
+    yrs.forEach(y => {
+      const v = DATA.pnl[y].admin_lines[line];
+      html += '<td class="right money">' + (v ? fmtCell(v) : '—') + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '<tr class="total-row"><td>Total Admin Expenses</td>';
+  yrs.forEach(y => { html += '<td class="right money">' + fmtCell(DATA.pnl[y].total_admin) + '</td>'; });
+  html += '</tr>';
+  
+  html += '<tr class="grand-row"><td>TOTAL EXPENSES</td>';
+  yrs.forEach(y => { html += '<td class="right money">' + fmtCell(DATA.pnl[y].total_expenses) + '</td>'; });
+  html += '</tr>';
+  
+  html += '<tr class="net-row"><td>CHANGE IN NET ASSETS</td>';
+  yrs.forEach(y => { html += '<td class="right money">' + fmtCell(DATA.pnl[y].surplus) + '</td>'; });
+  html += '</tr>';
+  
+  tbody.innerHTML = html;
+}
+
+// ============ P&L charts ============
+function renderPnlBar() {
+  const ctx = document.getElementById('chartPnlBar');
+  if (!ctx) return;
+  killChart('pnlBar');
+  const yrs = ['2024','2025','2026'];
+  const yrLabels = ['2024','2025','2026 Q1'];
+  const rev = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].total_revenue.usd : DATA.pnl[y].total_revenue.uzs);
+  const exp = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].total_expenses.usd : DATA.pnl[y].total_expenses.uzs);
+  const sur = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].surplus.usd : DATA.pnl[y].surplus.uzs);
+  charts.pnlBar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: yrLabels,
+      datasets: [
+        { label: 'Revenue', data: rev, backgroundColor: C.green, borderRadius: 4 },
+        { label: 'Expenses', data: exp, backgroundColor: C.coral, borderRadius: 4 },
+        { label: 'Surplus', data: sur, backgroundColor: C.ocean, borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: {
+          display: true, align: 'top', anchor: 'end',
+          color: C.ink, font: { weight: 'bold', size: 9 },
+          formatter: v => fmt(v, state.ccy),
+        },
+      }
+    }
+  });
+}
+
+function renderPnlRevStack() {
+  const ctx = document.getElementById('chartPnlRevStack');
+  if (!ctx) return;
+  killChart('pnlRevStack');
+  const yrs = ['2024','2025','2026'];
+  const yrLabels = ['2024','2025','2026 Q1'];
+  const types = ['International','Founders','Domestic Corporate','Bank Sponsors','Tax Refunds','Other'];
+  const datasets = types.map(t => ({
+    label: t,
+    data: yrs.map(y => {
+      const rev = DATA.revenue[y][t];
+      return state.ccy === 'USD' ? rev.usd_eq : rev.uzs + rev.usd * FX[parseInt(y)];
+    }),
+    backgroundColor: REV_COLORS[t],
+    borderRadius: 4,
+    stack: 'a',
+  }));
+  charts.pnlRevStack = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: yrLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: { display: false },
+      }
+    }
+  });
+}
+
+// ============ BALANCE SHEET ============
+function renderBsTable() {
+  const tbody = document.querySelector('#bsTable tbody');
+  if (!tbody) return;
+  const ccy = state.ccy;
+  const cash = DATA.cash;
+  const mainU = cash.account_main_uzs, cardU = cash.account_card_uzs, usdN = cash.account_usd;
+  const mainUsd = mainU / FX.current, cardUsd = cardU / FX.current, usdUsd = usdN;
+  const totalUsd = cash.total_usd, totalUzs = cash.total_uzs;
+  
+  const cell = (uzs, usd) => ccy === 'USD' ? fmt(usd, 'USD') : fmt(uzs, 'UZS');
+  
+  let html = '';
+  html += '<tr class="section-row"><td colspan="3">Assets</td></tr>';
+  html += '<tr><td class="indent">Cash — UZS Main (20212000)</td><td class="right money">'+cell(mainU, mainUsd)+'</td><td class="muted">Primary operating account</td></tr>';
+  html += '<tr><td class="indent">Cash — UZS Corporate Card (22620000)</td><td class="right money">'+cell(cardU, cardUsd)+'</td><td class="muted">Corporate card expense account</td></tr>';
+  html += '<tr><td class="indent">Cash — USD Account (22696840)</td><td class="right money">'+cell(usdN*FX.current, usdUsd)+'</td><td class="muted">Foreign currency reserve</td></tr>';
+  html += '<tr><td class="indent">Accounts Receivable</td><td class="right money">'+cell(0,0)+'</td><td class="muted">None outstanding</td></tr>';
+  html += '<tr><td class="indent">Prepaid Expenses</td><td class="right money">'+cell(0,0)+'</td><td class="muted">None</td></tr>';
+  html += '<tr class="total-row"><td>Total Assets</td><td class="right money">'+cell(totalUzs, totalUsd)+'</td><td></td></tr>';
+  
+  html += '<tr class="section-row"><td colspan="3">Liabilities</td></tr>';
+  html += '<tr><td class="indent">Accounts Payable</td><td class="right money">'+cell(0,0)+'</td><td class="muted">None outstanding</td></tr>';
+  html += '<tr><td class="indent">Accrued Expenses</td><td class="right money">'+cell(0,0)+'</td><td class="muted">Settled monthly</td></tr>';
+  html += '<tr><td class="indent">Tax Liabilities</td><td class="right money">'+cell(0,0)+'</td><td class="muted">Current</td></tr>';
+  html += '<tr class="total-row"><td>Total Liabilities</td><td class="right money">'+cell(0,0)+'</td><td></td></tr>';
+  
+  html += '<tr class="section-row"><td colspan="3">Net Assets</td></tr>';
+  html += '<tr><td class="indent">Accumulated Surplus (unrestricted)</td><td class="right money">'+cell(totalUzs, totalUsd)+'</td><td class="muted">Assets − Liabilities</td></tr>';
+  html += '<tr class="net-row"><td>Total Liabilities + Net Assets</td><td class="right money">'+cell(totalUzs, totalUsd)+'</td><td></td></tr>';
+  
+  tbody.innerHTML = html;
+}
+
+function renderBsCashMix() {
+  const ctx = document.getElementById('chartBsCashMix');
+  if (!ctx) return;
+  killChart('bsCashMix');
+  const cash = DATA.cash;
+  const mainU = cash.account_main_uzs, cardU = cash.account_card_uzs, usdEq = cash.account_usd * FX.current;
+  const vals = state.ccy === 'USD' 
+    ? [mainU / FX.current, cardU / FX.current, cash.account_usd]
+    : [mainU, cardU, usdEq];
+  charts.bsCashMix = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['UZS Main Account', 'UZS Corporate Card', 'USD Account'],
+      datasets: [{
+        data: vals,
+        backgroundColor: [C.ocean, C.teal, C.green],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 14 } },
+        datalabels: {
+          display: true,
+          color: 'white',
+          font: { weight: 'bold', size: 12 },
+          formatter: (v, c) => {
+            const total = c.dataset.data.reduce((a,b) => a+b, 0);
+            return (v/total*100).toFixed(0) + '%';
+          },
+        },
+        tooltip: { callbacks: { label: c => c.label + ': ' + fmtFull(c.raw, state.ccy) } },
+      },
+      cutout: '60%',
+    },
+  });
+}
+
+function renderBsGrowth() {
+  const ctx = document.getElementById('chartBsGrowth');
+  if (!ctx) return;
+  killChart('bsGrowth');
+  // Cumulative surplus = net assets at end of period
+  const yrs = ['2024','2025','2026'];
+  const yrLabels = ['End 2024','End 2025','End Q1 2026'];
+  let cumu = 0;
+  const vals = yrs.map(y => {
+    cumu += state.ccy === 'USD' ? DATA.pnl[y].surplus.usd : DATA.pnl[y].surplus.uzs;
+    return cumu;
+  });
+  charts.bsGrowth = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: yrLabels,
+      datasets: [{
+        label: 'Accumulated Surplus',
+        data: vals,
+        backgroundColor: [C.teal, C.ocean, C.green],
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true, align: 'top', anchor: 'end',
+          color: C.ink, font: { weight: 'bold', size: 10 },
+          formatter: v => fmt(v, state.ccy),
+        },
+      }
+    }
+  });
+}
+
+// ============ CASH FLOW ============
+function renderCfTable() {
+  const tbody = document.querySelector('#cfTable tbody');
+  if (!tbody) return;
+  const yrs = ['2024','2025','2026'];
+  const fmtCell = v => state.ccy === 'USD' ? fmt(v.usd, 'USD') : fmt(v.uzs, 'UZS');
+  
+  let html = '';
+  html += '<tr class="section-row"><td colspan="4">Cash from Operating Activities</td></tr>';
+  
+  // Inflows
+  html += '<tr><td class="indent">Cash received — International grants</td>';
+  yrs.forEach(y => html += '<td class="right money">'+fmtCell(DATA.pnl[y].revenue_lines.International || {uzs:0,usd:0})+'</td>');
+  html += '</tr>';
+  
+  html += '<tr><td class="indent">Cash received — Founder donations</td>';
+  yrs.forEach(y => html += '<td class="right money">'+fmtCell(DATA.pnl[y].revenue_lines.Founders || {uzs:0,usd:0})+'</td>');
+  html += '</tr>';
+  
+  html += '<tr><td class="indent">Cash received — Domestic corporate</td>';
+  yrs.forEach(y => html += '<td class="right money">'+fmtCell(DATA.pnl[y].revenue_lines['Domestic Corporate'] || {uzs:0,usd:0})+'</td>');
+  html += '</tr>';
+  
+  html += '<tr><td class="indent">Cash received — Bank sponsors</td>';
+  yrs.forEach(y => html += '<td class="right money">'+fmtCell(DATA.pnl[y].revenue_lines['Bank Sponsors'] || {uzs:0,usd:0})+'</td>');
+  html += '</tr>';
+  
+  html += '<tr><td class="indent">Cash received — Other</td>';
+  yrs.forEach(y => {
+    const o = DATA.pnl[y].revenue_lines.Other || {uzs:0,usd:0};
+    const r = DATA.pnl[y].revenue_lines['Tax Refunds'] || {uzs:0,usd:0};
+    html += '<td class="right money">'+fmtCell({uzs: o.uzs+r.uzs, usd: o.usd+r.usd})+'</td>';
+  });
+  html += '</tr>';
+  
+  // Outflows (negative)
+  html += '<tr><td class="indent">Cash paid — Program expenses</td>';
+  yrs.forEach(y => { const v = DATA.pnl[y].total_program; html += '<td class="right money">('+fmtCell(v)+')</td>'; });
+  html += '</tr>';
+  
+  html += '<tr><td class="indent">Cash paid — Administrative</td>';
+  yrs.forEach(y => { const v = DATA.pnl[y].total_admin; html += '<td class="right money">('+fmtCell(v)+')</td>'; });
+  html += '</tr>';
+  
+  html += '<tr class="total-row"><td>Net Cash from Operating</td>';
+  yrs.forEach(y => { const v = DATA.pnl[y].surplus; html += '<td class="right money">'+fmtCell(v)+'</td>'; });
+  html += '</tr>';
+  
+  html += '<tr class="section-row"><td colspan="4">Investing &amp; Financing</td></tr>';
+  html += '<tr><td class="indent muted">(none)</td><td class="right muted">—</td><td class="right muted">—</td><td class="right muted">—</td></tr>';
+  
+  html += '<tr class="net-row"><td>Net Change in Cash</td>';
+  yrs.forEach(y => { const v = DATA.pnl[y].surplus; html += '<td class="right money">'+fmtCell(v)+'</td>'; });
+  html += '</tr>';
+  
+  tbody.innerHTML = html;
+}
+
+function renderCfBar() {
+  const ctx = document.getElementById('chartCfBar');
+  if (!ctx) return;
+  killChart('cfBar');
+  if (state.cfGran === 'yearly') {
+    const yrs = ['2024','2025','2026'];
+    const yrLabels = ['2024','2025','2026 Q1'];
+    const inflow = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].total_revenue.usd : DATA.pnl[y].total_revenue.uzs);
+    const outflow = yrs.map(y => -(state.ccy === 'USD' ? DATA.pnl[y].total_expenses.usd : DATA.pnl[y].total_expenses.uzs));
+    const net = yrs.map(y => state.ccy === 'USD' ? DATA.pnl[y].surplus.usd : DATA.pnl[y].surplus.uzs);
+    charts.cfBar = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: yrLabels,
+        datasets: [
+          { label: 'Inflows', data: inflow, backgroundColor: C.green, borderRadius: 4 },
+          { label: 'Outflows', data: outflow, backgroundColor: C.coral, borderRadius: 4 },
+          { label: 'Net', data: net, backgroundColor: C.ocean, borderRadius: 4, type: 'line', borderColor: C.ocean, borderWidth: 3, fill: false, tension: 0.2 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { x: { grid: { display: false } }, y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } } },
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+          datalabels: {
+            display: true, align: c => c.dataset.label === 'Net' ? 'top' : 'center',
+            anchor: c => c.dataset.label === 'Net' ? 'end' : 'center',
+            color: c => c.dataset.label === 'Net' ? C.ink : 'white',
+            font: { weight: 'bold', size: 10 },
+            formatter: v => fmt(v, state.ccy),
+          },
+        }
+      }
+    });
+  } else {
+    const qs = Object.keys(DATA.quarterly);
+    const inflow = qs.map(q => state.ccy === 'USD' ? DATA.quarterly[q].revenue_usd : DATA.quarterly[q].revenue_uzs);
+    const outflow = qs.map(q => -(state.ccy === 'USD' ? (DATA.quarterly[q].program_usd + DATA.quarterly[q].admin_usd) : (DATA.quarterly[q].program_uzs + DATA.quarterly[q].admin_uzs)));
+    const net = inflow.map((v, i) => v + outflow[i]);
+    charts.cfBar = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: qs,
+        datasets: [
+          { label: 'Inflows', data: inflow, backgroundColor: C.green, borderRadius: 4 },
+          { label: 'Outflows', data: outflow, backgroundColor: C.coral, borderRadius: 4 },
+          { label: 'Net', data: net, type: 'line', borderColor: C.ocean, borderWidth: 3, fill: false, tension: 0.3, pointRadius: 4, pointBackgroundColor: C.ocean },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { x: { grid: { display: false } }, y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } } },
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+          datalabels: { display: false },
+        }
+      }
+    });
+  }
+}
+
+// ============ REVENUE TAB ============
+function renderRevByType() {
+  const ctx = document.getElementById('chartRevByType');
+  if (!ctx) return;
+  killChart('revByType');
+  const yrs = state.years === 'all' ? ['2024','2025','2026'] : [state.years];
+  const yrLabels = yrs.map(y => y === '2026' ? '2026 Q1' : y);
+  const allTypes = ['International','Founders','Domestic Corporate','Bank Sponsors','Tax Refunds','Other'];
+  const types = state.revTypeFilter === 'all' ? allTypes : [state.revTypeFilter];
+  const datasets = types.map(t => ({
+    label: t,
+    data: yrs.map(y => {
+      const rev = DATA.revenue[y][t];
+      return state.ccy === 'USD' ? rev.usd_eq : rev.uzs + rev.usd * FX[parseInt(y)];
+    }),
+    backgroundColor: REV_COLORS[t],
+    borderRadius: 4,
+    stack: 'a',
+  }));
+  charts.revByType = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: yrLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { grid: { display: false } }, y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } } },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: {
+          display: c => c.dataset.data[c.dataIndex] > (state.ccy === 'USD' ? 20000 : 300000000),
+          color: 'white', font: { weight: 'bold', size: 10 },
+          formatter: v => fmt(v, state.ccy),
+        },
+      }
+    }
+  });
+}
+
+function renderDonorTable() {
+  const tbody = document.querySelector('#donorTable tbody');
+  if (!tbody) return;
+  const ft = state.donorTypeFilter;
+  const donors = ft === 'all' ? DATA.donors : DATA.donors.filter(d => d.type === ft);
+  const total = donors.reduce((s, d) => s + d.lifetime_usd, 0);
+  
+  let html = '';
+  donors.forEach(d => {
+    const typeLc = d.type.toLowerCase().replace('revenue-','').replace(/[^a-z]/g,'');
+    const isTop = ['IMC-Capital','Zafar Khashimov (Founder)','Teach for All','Stirling Foundation'].includes(d.name);
+    const u24 = d.u24 + d.d24 * FX[2024];
+    const u25 = d.u25 + d.d25 * FX[2025];
+    const u26 = d.u26 + d.d26 * FX[2026];
+    const v24 = state.ccy === 'USD' ? u24/FX[2024] : u24;
+    const v25 = state.ccy === 'USD' ? u25/FX[2025] : u25;
+    const v26 = state.ccy === 'USD' ? u26/FX[2026] : u26;
+    const vLife = state.ccy === 'USD' ? d.lifetime_usd : d.lifetime_usd * FX.current;
+    const typeLabel = d.type.replace('Revenue-','').replace('International','International').replace('Domestic','Domestic').replace('Sponsor','Bank Sponsor');
+    html += `<tr${isTop ? ' class="highlight"' : ''}>
+      <td class="strong">${d.name}</td>
+      <td><span class="badge ${typeLc}">${typeLabel}</span></td>
+      <td class="right money">${v24 > 0 ? fmt(v24, state.ccy) : '—'}</td>
+      <td class="right money">${v25 > 0 ? fmt(v25, state.ccy) : '—'}</td>
+      <td class="right money">${v26 > 0 ? fmt(v26, state.ccy) : '—'}</td>
+      <td class="right money strong">${fmt(vLife, state.ccy)}</td>
+      <td class="right">${total > 0 ? (d.lifetime_usd/total*100).toFixed(1) : '0.0'}%</td>
+    </tr>`;
+  });
+  html += `<tr class="grand-row"><td colspan="5">TOTAL (${donors.length} donors)</td><td class="right money">${fmt(state.ccy === 'USD' ? total : total*FX.current, state.ccy)}</td><td class="right">100.0%</td></tr>`;
+  tbody.innerHTML = html;
+}
+
+// ============ EXPENSES TAB ============
+function renderAdminTrend() {
+  const ctx = document.getElementById('chartAdminTrend');
+  if (!ctx) return;
+  killChart('adminTrend');
+  const periods = state.adminTrendGran === 'quarterly' ? Object.keys(DATA.quarterly) : Object.keys(DATA.monthly);
+  const dataObj = state.adminTrendGran === 'quarterly' ? DATA.quarterly : DATA.monthly;
+  const labels = state.adminTrendGran === 'quarterly' ? periods : periods.map(p => {
+    const [y,m] = p.split('-');
+    const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return mNames[parseInt(m)-1] + ' ' + y.slice(2);
+  });
+  
+  let datasets;
+  const note = document.getElementById('adminTrendNote');
+  
+  if (state.adminTrendView === 'share') {
+    const adminShare = periods.map(p => {
+      const d = dataObj[p];
+      const t = d.program_usd + d.admin_usd;
+      return t > 0 ? (d.admin_usd / t) * 100 : 0;
+    });
+    const progShare = periods.map(p => {
+      const d = dataObj[p];
+      const t = d.program_usd + d.admin_usd;
+      return t > 0 ? (d.program_usd / t) * 100 : 0;
+    });
+    datasets = [
+      { label: 'Program share %', data: progShare, backgroundColor: C.ocean, borderRadius: 2, stack: 'a' },
+      { label: 'Admin share %', data: adminShare, backgroundColor: C.gold, borderRadius: 2, stack: 'a' },
+    ];
+    // Calculate trend direction for admin
+    const validPeriods = adminShare.filter(v => v > 0);
+    const recent = validPeriods.slice(-3).reduce((s,v)=>s+v, 0) / Math.min(3, validPeriods.length);
+    const early = validPeriods.slice(0, 3).reduce((s,v)=>s+v, 0) / Math.min(3, validPeriods.length);
+    const trend = recent - early;
+    note.innerHTML = trend < 0 
+      ? `<strong>Admin share trend:</strong> Moving in the right direction — down ${Math.abs(trend).toFixed(1)} pp from early periods to recent. Keep pushing toward the 35% target.`
+      : `<strong>Admin share trend:</strong> Currently ${trend.toFixed(1)} pp above early periods. This is the strategic KPI the board should watch closely — target is 35% or lower.`;
+    note.className = trend < 0 ? 'callout ok' : 'callout warn';
+  } else {
+    // Absolute
+    const prog = periods.map(p => state.ccy === 'USD' ? dataObj[p].program_usd : dataObj[p].program_uzs);
+    const admin = periods.map(p => state.ccy === 'USD' ? dataObj[p].admin_usd : dataObj[p].admin_uzs);
+    datasets = [
+      { label: 'Program', data: prog, backgroundColor: C.ocean, borderRadius: 3, stack: 'a' },
+      { label: 'Admin', data: admin, backgroundColor: C.gold, borderRadius: 3, stack: 'a' },
+    ];
+    note.innerHTML = '<strong>Absolute expense view:</strong> Total spend is scaling up with the organization. Goal is for the blue (Program) bar to grow faster than the gold (Admin) bar at each successive period.';
+    note.className = 'callout info';
+  }
+  
+  charts.adminTrend = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: state.adminTrendGran === 'monthly' ? 9 : 11 } } },
+        y: state.adminTrendView === 'share' 
+          ? { grid: { color: '#F1F5F9' }, stacked: true, max: 100, ticks: { callback: v => v + '%' } }
+          : { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: state.adminTrendView === 'share' ? {
+          display: c => c.dataset.data[c.dataIndex] > 8,
+          color: 'white', font: { weight: 'bold', size: 9 },
+          formatter: v => v.toFixed(0) + '%',
+        } : {
+          display: c => c.dataset.data[c.dataIndex] > (state.ccy === 'USD' ? 15000 : 200000000),
+          color: 'white', font: { weight: 'bold', size: 9 },
+          formatter: v => fmt(v, state.ccy),
+        },
+      }
+    }
+  });
+}
+
+function renderExpCats() {
+  const ctx = document.getElementById('chartExpCats');
+  if (!ctx) return;
+  killChart('expCats');
+  let cats = Object.entries(DATA.expense_subcats).map(([code, c]) => ({...c, code}));
+  if (state.expCatFilter !== 'all') cats = cats.filter(c => c.type === state.expCatFilter);
+  // Filter by years
+  const yrs = state.years === 'all' ? ['2024','2025','2026'] : [state.years];
+  cats = cats.map(c => ({
+    ...c,
+    filtered_usd: yrs.reduce((s, y) => s + (c.by_year_usd[y] || 0), 0),
+    filtered_uzs: yrs.reduce((s, y) => s + (c.by_year_uzs[y] || 0), 0),
+  }));
+  cats.sort((a, b) => b.filtered_usd - a.filtered_usd);
+  cats = cats.slice(0, 12);
+  
+  const vals = cats.map(c => state.ccy === 'USD' ? c.filtered_usd : c.filtered_uzs);
+  const colors = cats.map(c => c.type === 'Program' ? C.ocean : C.gold);
+  
+  charts.expCats = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: cats.map(c => c.name),
+      datasets: [{ data: vals, backgroundColor: colors, borderRadius: 4 }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+        y: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true, align: 'end', anchor: 'end',
+          color: C.ink, font: { weight: 'bold', size: 10 },
+          formatter: v => fmt(v, state.ccy),
+        },
+      },
+      layout: { padding: { right: 50 } },
+    }
+  });
+}
+
+function renderExpMonthly() {
+  const ctx = document.getElementById('chartExpMonthly');
+  if (!ctx) return;
+  killChart('expMonthly');
+  const months = Object.keys(DATA.monthly);
+  const prog = months.map(m => state.ccy === 'USD' ? DATA.monthly[m].program_usd : DATA.monthly[m].program_uzs);
+  const admin = months.map(m => state.ccy === 'USD' ? DATA.monthly[m].admin_usd : DATA.monthly[m].admin_uzs);
+  const labels = months.map(m => {
+    const [y,mn] = m.split('-');
+    const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return mNames[parseInt(mn)-1] + "'" + y.slice(2);
+  });
+  charts.expMonthly = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Program', data: prog, backgroundColor: C.ocean, borderRadius: 2, stack: 'a' },
+        { label: 'Admin', data: admin, backgroundColor: C.gold, borderRadius: 2, stack: 'a' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } },
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: { display: false },
+      }
+    }
+  });
+}
+
+function renderExpChangeTable() {
+  const tbody = document.querySelector('#expChangeTable tbody');
+  if (!tbody) return;
+  const cats = Object.entries(DATA.expense_subcats).map(([code, c]) => ({...c, code}));
+  cats.sort((a, b) => b.total_usd - a.total_usd);
+  
+  let html = '';
+  cats.forEach(c => {
+    const v24 = state.ccy === 'USD' ? c.by_year_usd['2024'] : c.by_year_uzs['2024'];
+    const v25 = state.ccy === 'USD' ? c.by_year_usd['2025'] : c.by_year_uzs['2025'];
+    const v26 = state.ccy === 'USD' ? c.by_year_usd['2026'] : c.by_year_uzs['2026'];
+    const change = v25 - v24;
+    const pctCh = v24 > 0 ? (change/v24*100) : (v25 > 0 ? 999 : 0);
+    const changeClass = change > 0 ? 'delta-up' : (change < 0 ? 'delta-down' : 'delta-flat');
+    const typeClass = c.type === 'Program' ? 'program' : 'admin';
+    html += `<tr>
+      <td class="strong">${c.name}</td>
+      <td><span class="badge ${typeClass}">${c.type}</span></td>
+      <td class="right money">${v24 > 0 ? fmt(v24, state.ccy) : '—'}</td>
+      <td class="right money">${v25 > 0 ? fmt(v25, state.ccy) : '—'}</td>
+      <td class="right money ${changeClass}">${v24 > 0 ? signed(change, state.ccy) + ' (' + (pctCh > 999 ? 'new' : (pctCh > 0 ? '+' : '') + pctCh.toFixed(0) + '%') + ')' : (v25 > 0 ? 'new' : '—')}</td>
+      <td class="right money">${v26 > 0 ? fmt(v26, state.ccy) : '—'}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ============ EFFICIENCY TAB ============
+function renderEffMain() {
+  const ctx = document.getElementById('chartEffMain');
+  if (!ctx) return;
+  killChart('effMain');
+  const periods = state.effGran === 'quarterly' ? Object.keys(DATA.quarterly) : Object.keys(DATA.monthly);
+  const dataObj = state.effGran === 'quarterly' ? DATA.quarterly : DATA.monthly;
+  const labels = state.effGran === 'quarterly' ? periods : periods.map(p => {
+    const [y,m] = p.split('-');
+    const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return mNames[parseInt(m)-1] + "'" + y.slice(2);
+  });
+  
+  let datasets;
+  
+  if (state.effView === 'share') {
+    const progShare = periods.map(p => {
+      const d = dataObj[p];
+      const t = d.program_usd + d.admin_usd;
+      return t > 0 ? (d.program_usd / t) * 100 : 0;
+    });
+    const adminShare = periods.map(p => {
+      const d = dataObj[p];
+      const t = d.program_usd + d.admin_usd;
+      return t > 0 ? (d.admin_usd / t) * 100 : 0;
+    });
+    datasets = [
+      { label: 'Program %', data: progShare, backgroundColor: C.ocean, borderRadius: 3, stack: 'a' },
+      { label: 'Admin %', data: adminShare, backgroundColor: C.gold, borderRadius: 3, stack: 'a' },
+      { label: 'Program target (65%)', data: periods.map(() => 65), type: 'line', borderColor: C.green, borderDash: [5,3], borderWidth: 2, fill: false, pointRadius: 0, stack: 'b' },
+    ];
+  } else if (state.effView === 'absolute') {
+    const prog = periods.map(p => state.ccy === 'USD' ? dataObj[p].program_usd : dataObj[p].program_uzs);
+    const admin = periods.map(p => state.ccy === 'USD' ? dataObj[p].admin_usd : dataObj[p].admin_uzs);
+    datasets = [
+      { label: 'Program', data: prog, backgroundColor: C.ocean, borderRadius: 3 },
+      { label: 'Admin', data: admin, backgroundColor: C.gold, borderRadius: 3 },
+    ];
+  } else {
+    // Change vs previous period
+    const progCh = periods.map((p, i) => {
+      if (i === 0) return 0;
+      const cur = state.ccy === 'USD' ? dataObj[p].program_usd : dataObj[p].program_uzs;
+      const prev = state.ccy === 'USD' ? dataObj[periods[i-1]].program_usd : dataObj[periods[i-1]].program_uzs;
+      return cur - prev;
+    });
+    const adminCh = periods.map((p, i) => {
+      if (i === 0) return 0;
+      const cur = state.ccy === 'USD' ? dataObj[p].admin_usd : dataObj[p].admin_uzs;
+      const prev = state.ccy === 'USD' ? dataObj[periods[i-1]].admin_usd : dataObj[periods[i-1]].admin_uzs;
+      return cur - prev;
+    });
+    datasets = [
+      { label: 'Program Δ', data: progCh, backgroundColor: C.ocean, borderRadius: 3 },
+      { label: 'Admin Δ', data: adminCh, backgroundColor: C.gold, borderRadius: 3 },
+    ];
+  }
+  
+  const yOpts = state.effView === 'share'
+    ? { grid: { color: '#F1F5F9' }, stacked: true, max: 100, ticks: { callback: v => v + '%' } }
+    : { grid: { color: '#F1F5F9' }, ticks: { callback: v => fmt(v, state.ccy) } };
+  
+  charts.effMain = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: state.effGran === 'monthly' ? 9 : 11 } } },
+        y: yOpts,
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 10, boxWidth: 8 } },
+        datalabels: state.effView === 'share' ? {
+          display: c => c.dataset.label && c.dataset.label.includes('%') && c.dataset.data[c.dataIndex] > 10,
+          color: 'white', font: { weight: 'bold', size: 9 },
+          formatter: v => v.toFixed(0) + '%',
+        } : { display: false },
+      }
+    }
+  });
+}
+
+function renderEffTable() {
+  const tbody = document.querySelector('#effTable tbody');
+  if (!tbody) return;
+  const qs = Object.keys(DATA.quarterly);
+  let html = '';
+  qs.forEach((q, i) => {
+    const d = DATA.quarterly[q];
+    const prog = state.ccy === 'USD' ? d.program_usd : d.program_uzs;
+    const admin = state.ccy === 'USD' ? d.admin_usd : d.admin_uzs;
+    const total = prog + admin;
+    const progPct = total > 0 ? prog / total : 0;
+    const adminPct = total > 0 ? admin / total : 0;
+    const prevAdminPct = i > 0 ? (() => {
+      const p = DATA.quarterly[qs[i-1]];
+      const t = (state.ccy === 'USD' ? p.program_usd : p.program_uzs) + (state.ccy === 'USD' ? p.admin_usd : p.admin_uzs);
+      return t > 0 ? (state.ccy === 'USD' ? p.admin_usd : p.admin_uzs) / t : 0;
+    })() : null;
+    const adminPctChange = prevAdminPct !== null ? (adminPct - prevAdminPct) * 100 : null;
+    const status = progPct >= 0.65 ? '<span class="kpi-chip chip-up">✓ On target</span>' :
+                   progPct >= 0.5 ? '<span class="kpi-chip chip-flat">● Near target</span>' :
+                   '<span class="kpi-chip chip-down">✗ Below</span>';
+    const chClass = adminPctChange !== null ? (adminPctChange < 0 ? 'delta-up' : adminPctChange > 0 ? 'delta-down' : 'delta-flat') : '';
+    const chText = adminPctChange !== null 
+      ? (adminPctChange > 0 ? '+' : '') + adminPctChange.toFixed(1) + ' pp'
+      : '—';
+    html += `<tr>
+      <td class="strong">${q}</td>
+      <td class="right money">${fmt(prog, state.ccy)}</td>
+      <td class="right money">${fmt(admin, state.ccy)}</td>
+      <td class="right money strong">${fmt(total, state.ccy)}</td>
+      <td class="right strong">${pct(progPct)}</td>
+      <td class="right ${chClass}">${chText}</td>
+      <td>${status}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// ============ ORCHESTRATION ============
+function renderAll() {
+  updateKpis();
+  // Overview
+  renderOvRev();
+  renderOvExp();
+  renderOvCash();
+  renderOvDonors();
+  renderOvAdminTrend();
+  // P&L
+  renderPnlTable();
+  renderPnlBar();
+  renderPnlRevStack();
+  // BS
+  renderBsTable();
+  renderBsCashMix();
+  renderBsGrowth();
+  // CF
+  renderCfTable();
+  renderCfBar();
+  // Revenue
+  renderRevByType();
+  renderDonorTable();
+  // Expenses
+  renderAdminTrend();
+  renderExpCats();
+  renderExpMonthly();
+  renderExpChangeTable();
+  // Efficiency
+  renderEffMain();
+  renderEffTable();
+}
+
+// ============ EVENT HANDLERS ============
+document.addEventListener('DOMContentLoaded', () => {
+  // Currency toggle
+  document.getElementById('ccyToggle').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#ccyToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.ccy = btn.dataset.ccy;
+    renderAll();
+  });
+  // Year toggle
+  document.getElementById('yearToggle').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#yearToggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.years = btn.dataset.year;
+    renderAll();
+  });
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', e => {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+      setTimeout(renderAll, 50);
+    });
+  });
+  // Section-level controls
+  document.getElementById('cashGranularity').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#cashGranularity button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.cashGran = btn.dataset.gran;
+    renderOvCash();
+  });
+  document.getElementById('cfGranularity').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#cfGranularity button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.cfGran = btn.dataset.gran;
+    renderCfBar();
+  });
+  document.getElementById('revTypeFilter').addEventListener('change', e => {
+    state.revTypeFilter = e.target.value;
+    renderRevByType();
+  });
+  document.getElementById('donorTypeFilter').addEventListener('change', e => {
+    state.donorTypeFilter = e.target.value;
+    renderDonorTable();
+  });
+  document.getElementById('expCatFilter').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#expCatFilter button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.expCatFilter = btn.dataset.type;
+    renderExpCats();
+  });
+  document.getElementById('adminTrendGran').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#adminTrendGran button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.adminTrendGran = btn.dataset.gran;
+    renderAdminTrend();
+  });
+  document.getElementById('adminTrendView').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#adminTrendView button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.adminTrendView = btn.dataset.view;
+    renderAdminTrend();
+  });
+  document.getElementById('effGran').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#effGran button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.effGran = btn.dataset.gran;
+    renderEffMain();
+  });
+  document.getElementById('effView').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#effView button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.effView = btn.dataset.view;
+    renderEffMain();
+  });
+  renderAll();
+});
+</script>
+</body>
+</html>
